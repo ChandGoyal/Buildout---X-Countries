@@ -2,13 +2,22 @@ import React, { useState, useEffect } from "react";
 
 function App() {
   const [countries, setCountries] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch("https://restcountries.com/v3.1/all")
-      .then((res) => res.json())
-      .then((data) => new Set(setCountries(data)))
-      .catch((err) => console.error("Error fetching data:", err));
-  });
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        return res.json();
+      })
+      .then((data) => setCountries(data))
+      .catch((err) => {
+        console.error("Error fetching data: ", err);
+        setError(err.message);
+      });
+  }, []);
 
   const cardStyle = {
     width: "200px",
@@ -34,6 +43,11 @@ function App() {
     alignItems: "center",
     height: "100vh",
   };
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div style={containerStyle}>
       {countries.map((country) => (
